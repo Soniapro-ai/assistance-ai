@@ -364,6 +364,14 @@
       box-shadow: 0 20px 40px rgba(42,171,238,0.3); transition: all 0.3s;
     }
     .cta-btn:hover { transform: translateY(-3px); box-shadow: 0 28px 56px rgba(42,171,238,0.4); }
+    .cta-btn-secondary {
+      display: inline-flex; align-items: center; gap: 10px; padding: 16px 32px;
+      background: transparent; border: 1px solid rgba(79,142,247,0.4);
+      border-radius: 100px; font-size: 15px; font-weight: 600;
+      color: var(--blue-bright); text-decoration: none; transition: all 0.3s;
+    }
+    .cta-btn-secondary:hover { background: rgba(79,142,247,0.08); border-color: var(--blue); transform: translateY(-2px); }
+    .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
 
     /* ANIMATIONS */
     @keyframes fadeSlideUp {
@@ -449,6 +457,8 @@
       .cta-boxes { flex-direction: column; }
       .cta-box { min-width: unset; width: 100%; }
       .cta-btn { width: 100%; justify-content: center; font-size: 14px; padding: 15px 24px; }
+      .cta-btn-secondary { width: 100%; justify-content: center; font-size: 13px; padding: 13px 20px; }
+      .hero-btns { flex-direction: column; }
 
       /* Section title */
       .section-title { font-size: clamp(22px, 6vw, 36px); }
@@ -509,9 +519,14 @@
     </div>
   </div>
 
-  <div class="hero-wa anim d4">
+  <div class="hero-btns anim d4">
+    <a class="cta-btn" href="#cta">Voir la démo complète →</a>
+    <a class="cta-btn-secondary" href="mailto:contact@assistance-ai.fr">Demander mon assistant 🤖</a>
+  </div>
+
+  <div class="hero-wa anim d5">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.820 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.800-.994-.643-.35-1.003.218-1.583.149-.155 2.732-2.504 2.782-2.717.006-.025.012-.12-.045-.17-.057-.05-.141-.033-.206-.019-.088.019-1.49.948-4.2 2.783-.398.273-.759.406-1.083.4-.357-.008-1.044-.202-1.555-.368-.626-.203-1.124-.31-1.080-.654.022-.178.253-.36.693-.547 2.713-1.18 4.522-1.96 5.426-2.340 2.584-1.075 3.121-1.262 3.471-1.268z"/></svg>
-    Piloté depuis votre messagerie · En temps réel
+    Piloté depuis Telegram, WhatsApp ou toute autre messagerie de votre choix
   </div>
 </section>
 
@@ -520,7 +535,7 @@
   <div class="glow-blue" style="top:50%;left:-300px;transform:translateY(-50%);"></div>
 
   <div class="emails-left anim">
-    <div class="section-label">📧 Module 1 — Emails</div>
+    <div class="section-label">📧 01 — Emails</div>
     <h2 class="section-title">Boîte mail gérée<br/><em>automatiquement</em></h2>
     <p style="color:var(--muted);font-size:14px;line-height:1.7;">
       L'IA trie, priorise, répond et archive. Les urgences remontent sur votre messagerie (Telegram, WhatsApp…) instantanément.
@@ -645,7 +660,7 @@
 
   <div class="wa-right">
     <div>
-      <div class="section-label">💬 Module 2 — Pilotage par messagerie</div>
+      <div class="section-label">💬 02 — Messagerie</div>
       <h2 class="section-title">Tout se pilote<br/><em>depuis votre messagerie</em></h2>
       <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:18px;">
         Un simple message suffit — sur <strong>Telegram</strong>, <strong>WhatsApp</strong> ou votre messagerie préférée. L'IA exécute, confirme, et vous tient informé en temps réel.
@@ -689,7 +704,7 @@
   <div class="glow-orange" style="top:-100px;right:-100px;"></div>
 
   <div style="flex:0 0 340px;" class="anim">
-    <div class="section-label">🔄 Module 3 — Relances commerciales</div>
+    <div class="section-label">🔄 03 — Relances commerciales</div>
     <h2 class="section-title">Pipeline de relances<br/><em>100% automatique</em></h2>
     <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:24px;">
       J+3 / J+7 / J+14 — Chaque message personnalisé selon le profil du prospect.
@@ -826,7 +841,7 @@
 
   <div class="reporting-right">
     <div>
-      <div class="section-label">📊 Module 4 — Reporting</div>
+      <div class="section-label">📊 04 — Reporting</div>
       <h2 class="section-title">Pilotage<br/><em>en automatique</em></h2>
       <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:16px;">
         Briefing messagerie à 8h. Rapport hebdo le vendredi. Alertes si un deal ne bouge plus.
