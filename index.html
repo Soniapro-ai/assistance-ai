@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Votre Chargé d'Affaires IA — Démo Live</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #060b18;
+      --surface: #0d1526;
+      --surface2: #131d33;
+      --border: rgba(79, 142, 247, 0.15);
+      --blue: #4f8ef7;
+      --blue-bright: #6fa3ff;
+      --green: #00d4a8;
+      --green-dim: #00b891;
+      --purple: #a78bfa;
+      --orange: #fb923c;
+      --red: #f87171;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --tg-blue: #2aabee;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-snap-type: y mandatory; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 999;
+    }
+
+    section {
+      min-height: 100vh;
+      scroll-snap-align: start;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 60px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glow-blue {
+      position: absolute; width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(79,142,247,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .glow-green {
+      position: absolute; width: 500px; height: 500px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,212,168,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .glow-purple {
+      position: absolute; width: 500px; height: 500px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(167,139,250,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .glow-orange {
+      position: absolute; width: 500px; height: 500px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(251,146,60,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* TOP BAR */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 40px;
+      background: rgba(6,11,24,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      z-index: 200;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 800; }
+    .logo-icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--blue), var(--green));
+      display: flex; align-items: center; justify-content: center; font-size: 15px;
+    }
+    .topbar-right { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--green);
+      box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite;
+    }
+
+    /* NAV DOTS */
+    .nav-dots {
+      position: fixed; right: 20px; top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: 10px; z-index: 200;
+    }
+    .nav-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--muted); border: none; cursor: pointer;
+      transition: all 0.3s; padding: 0;
+    }
+    .nav-dot.active { background: var(--blue); box-shadow: 0 0 10px var(--blue); transform: scale(1.5); }
+
+    /* BADGES & TITLES */
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 16px;
+      background: rgba(79,142,247,0.1); border: 1px solid rgba(79,142,247,0.3);
+      border-radius: 100px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em;
+      color: var(--blue-bright); text-transform: uppercase;
+    }
+    .badge::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green); box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s infinite;
+    }
+    .section-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--blue); margin-bottom: 10px;
+    }
+    .section-title {
+      font-size: clamp(28px, 3.5vw, 48px);
+      font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 16px;
+    }
+    .section-title em { font-style: normal; color: var(--green); }
+
+    /* ═══ HERO ═══ */
+    #hero { flex-direction: column; text-align: center; gap: 28px; }
+    h1 {
+      font-size: clamp(42px, 6vw, 80px); font-weight: 900;
+      line-height: 1.05; letter-spacing: -0.03em;
+    }
+    h1 .line1 { display: block; }
+    h1 .line2 {
+      display: block;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--green) 55%, var(--purple) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero-sub { font-size: 18px; color: var(--muted); max-width: 560px; line-height: 1.7; }
+    .hero-stats { display: flex; gap: 48px; }
+    .stat-val {
+      font-size: 40px; font-weight: 800;
+      background: linear-gradient(135deg, var(--blue), var(--green));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      line-height: 1;
+    }
+    .stat-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 6px; }
+
+    .hero-wa {
+      display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px;
+      background: rgba(42,171,238,0.1); border: 1px solid rgba(42,171,238,0.3);
+      border-radius: 100px; font-size: 15px; font-weight: 600; color: var(--tg-blue);
+    }
+
+    /* ═══ EMAILS ═══ */
+    #emails { gap: 64px; }
+    .emails-left { flex: 0 0 380px; }
+    .emails-right { flex: 1; display: flex; flex-direction: column; gap: 10px; max-width: 540px; }
+
+    .email-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 18px; display: flex; align-items: flex-start; gap: 14px;
+      transition: all 0.3s; position: relative; overflow: hidden;
+    }
+    .email-card::after {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 3px 0 0 3px;
+    }
+    .email-card.urgent::after { background: var(--red); }
+    .email-card.normal::after { background: var(--blue); }
+    .email-card.done::after { background: var(--green); }
+    .email-card.relance::after { background: var(--orange); }
+    .email-card:hover { border-color: rgba(79,142,247,0.35); transform: translateX(4px); }
+
+    .email-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; flex-shrink: 0;
+    }
+    .email-body { flex: 1; min-width: 0; }
+    .email-from { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+    .email-subject { font-size: 13px; font-weight: 600; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .email-preview { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ai-badge {
+      display: inline-flex; align-items: center; gap: 5px; margin-top: 6px;
+      padding: 3px 8px; background: rgba(0,212,168,0.1); border: 1px solid rgba(0,212,168,0.2);
+      border-radius: 100px; font-size: 10px; font-weight: 600; color: var(--green);
+    }
+    .email-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+    .email-time { font-size: 10px; color: var(--muted); }
+    .email-tag {
+      padding: 2px 7px; border-radius: 100px;
+      font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .tag-urgent { background: rgba(248,113,113,0.15); color: var(--red); }
+    .tag-relance { background: rgba(251,146,60,0.15); color: var(--orange); }
+    .tag-done { background: rgba(0,212,168,0.15); color: var(--green); }
+    .tag-auto { background: rgba(79,142,247,0.15); color: var(--blue); }
+
+    .feature-list { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+    .feat-item { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+    .feat-check { color: var(--green); font-size: 14px; flex-shrink: 0; }
+
+    /* ═══ WHATSAPP ═══ */
+    #telegram { gap: 64px; }
+    .wa-phone {
+      width: 320px; background: #0d1f2d; border-radius: 36px;
+      border: 2px solid rgba(255,255,255,0.07); overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+      flex-shrink: 0;
+    }
+    .wa-header {
+      background: #1a2d3d; padding: 12px 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .wa-avatar-icon {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--green), var(--blue));
+      display: flex; align-items: center; justify-content: center; font-size: 16px;
+    }
+    .wa-name { font-size: 14px; font-weight: 600; }
+    .wa-online { font-size: 10px; color: var(--green); }
+
+    .wa-body {
+      background: #0a1929; padding: 14px;
+      display: flex; flex-direction: column; gap: 8px;
+      min-height: 380px; max-height: 420px; overflow-y: auto;
+    }
+    .wa-msg { max-width: 85%; padding: 9px 12px; border-radius: 10px; font-size: 12px; line-height: 1.5; }
+    .wa-msg.out { background: #1e3a5f; align-self: flex-end; border-bottom-right-radius: 3px; }
+    .wa-msg.in { background: #1a2d3d; align-self: flex-start; border-bottom-left-radius: 3px; }
+    .wa-time-stamp { font-size: 9px; color: rgba(255,255,255,0.35); margin-top: 3px; text-align: right; }
+    .wa-msg.in .wa-time-stamp { text-align: left; }
+
+    .wa-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: bounce 1.4s infinite; }
+    .wa-dot:nth-child(2) { animation-delay: 0.2s; }
+    .wa-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    .wa-right { flex: 1; max-width: 460px; display: flex; flex-direction: column; gap: 16px; }
+    .cmd-item {
+      display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      cursor: default; transition: all 0.25s;
+    }
+    .cmd-item:hover { border-color: rgba(42,171,238,0.4); background: rgba(42,171,238,0.04); transform: translateX(4px); }
+    .cmd-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .cmd-text { font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--text); line-height: 1.5; }
+    .cmd-result { font-size: 11px; color: var(--green); margin-top: 3px; }
+
+    /* ═══ RELANCES ═══ */
+    #relances { gap: 64px; }
+    .pipeline { display: flex; flex-direction: column; }
+    .pipeline-stage { display: flex; align-items: stretch; gap: 0; position: relative; }
+    .pipeline-stage:not(:last-child)::after {
+      content: ''; position: absolute; left: 19px; top: 42px; bottom: -12px;
+      width: 2px; background: linear-gradient(to bottom, var(--border), transparent);
+    }
+    .stage-dot {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0; margin-top: 10px;
+      border: 2px solid; position: relative; z-index: 1;
+    }
+    .stage-content { flex: 1; padding: 10px 0 22px 18px; }
+    .stage-day { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+    .stage-action { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+    .stage-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .auto-tag {
+      display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; padding: 3px 8px;
+      background: rgba(0,212,168,0.1); border-radius: 100px;
+      font-size: 9px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.05em;
+    }
+
+    .relances-right { flex: 1; max-width: 460px; display: flex; flex-direction: column; gap: 10px; }
+    .prospect-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 16px; display: flex; align-items: center; gap: 14px;
+      transition: all 0.3s;
+    }
+    .prospect-card:hover { border-color: rgba(79,142,247,0.3); transform: translateY(-2px); }
+    .p-avatar {
+      width: 38px; height: 38px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px; flex-shrink: 0;
+    }
+    .p-name { font-size: 13px; font-weight: 600; }
+    .p-company { font-size: 11px; color: var(--muted); }
+    .p-badge {
+      padding: 2px 8px; border-radius: 100px;
+      font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .p-val { font-size: 11px; color: var(--muted); }
+    .p-btn {
+      display: flex; align-items: center; gap: 5px; padding: 5px 12px;
+      background: rgba(0,212,168,0.1); border: 1px solid rgba(0,212,168,0.25);
+      border-radius: 8px; font-size: 10px; font-weight: 700; color: var(--green);
+      cursor: default; white-space: nowrap;
+    }
+
+    /* ═══ REPORTING ═══ */
+    #reporting { gap: 64px; }
+    .briefing-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 22px; width: 320px; flex-shrink: 0;
+    }
+    .briefing-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+    .briefing-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: linear-gradient(135deg, rgba(0,212,168,0.2), rgba(79,142,247,0.2));
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+    }
+    .briefing-title { font-size: 15px; font-weight: 700; }
+    .briefing-date { font-size: 11px; color: var(--muted); }
+    .b-sec-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin: 12px 0 6px; }
+    .b-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+    .b-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .b-text { font-size: 12px; flex: 1; }
+    .b-val { font-size: 12px; font-weight: 700; }
+    .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+    .kpi-card {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px; text-align: center;
+    }
+    .kpi-val { font-size: 24px; font-weight: 800; line-height: 1; }
+    .kpi-label { font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+    .reporting-right { flex: 1; max-width: 480px; display: flex; flex-direction: column; gap: 10px; }
+    .alert-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px;
+      transition: all 0.3s;
+    }
+    .alert-card:hover { border-color: rgba(167,139,250,0.4); transform: translateX(4px); }
+    .alert-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+    .alert-title { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+    .alert-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+    .alert-footer { font-size: 10px; color: var(--green); margin-top: 4px; }
+
+    /* ═══ CTA ═══ */
+    #cta { flex-direction: column; text-align: center; gap: 28px; }
+    .cta-title { font-size: clamp(32px, 5vw, 60px); font-weight: 900; line-height: 1.05; letter-spacing: -0.02em; }
+    .cta-title span {
+      background: linear-gradient(135deg, var(--blue), var(--green), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .cta-boxes { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; max-width: 680px; }
+    .cta-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 18px 22px; flex: 1; min-width: 150px; text-align: left;
+      transition: all 0.3s;
+    }
+    .cta-box:hover { border-color: rgba(79,142,247,0.4); transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+    .cta-box-icon { font-size: 24px; margin-bottom: 8px; }
+    .cta-box-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .cta-box-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+    .cta-btn {
+      display: inline-flex; align-items: center; gap: 12px; padding: 18px 40px;
+      background: linear-gradient(135deg, #2aabee, #1a78c2); border-radius: 100px;
+      font-size: 16px; font-weight: 700; color: white; text-decoration: none;
+      box-shadow: 0 20px 40px rgba(42,171,238,0.3); transition: all 0.3s;
+    }
+    .cta-btn:hover { transform: translateY(-3px); box-shadow: 0 28px 56px rgba(42,171,238,0.4); }
+
+    /* ANIMATIONS */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-5px); }
+    }
+    .anim { animation: fadeSlideUp 0.6s ease both; }
+    .d1 { animation-delay: 0.1s; } .d2 { animation-delay: 0.2s; }
+    .d3 { animation-delay: 0.3s; } .d4 { animation-delay: 0.4s; }
+    .d5 { animation-delay: 0.5s; }
+
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="logo">
+    <div class="logo-icon">🤖</div>
+    <span>Assistant IA — Chargé d'Affaires</span>
+  </div>
+  <div class="topbar-right">
+    <div class="live-dot"></div>
+    Démo live · OpenClaw + Composio · Gmail connecté
+  </div>
+</nav>
+
+<div class="nav-dots" id="navDots">
+  <button class="nav-dot active" data-s="0"></button>
+  <button class="nav-dot" data-s="1"></button>
+  <button class="nav-dot" data-s="2"></button>
+  <button class="nav-dot" data-s="3"></button>
+  <button class="nav-dot" data-s="4"></button>
+  <button class="nav-dot" data-s="5"></button>
+</div>
+
+<!-- ══════ HERO ══════ -->
+<section id="hero">
+  <div class="glow-blue" style="top:-200px;left:-200px;"></div>
+  <div class="glow-green" style="bottom:-200px;right:-200px;"></div>
+
+  <div class="badge anim">🚀 Setup actif · Démo en direct</div>
+
+  <h1 class="anim d1">
+    <span class="line1">Votre chargé d'affaires</span>
+    <span class="line2">travaille 24h/24 pour vous</span>
+  </h1>
+
+  <p class="hero-sub anim d2">
+    OpenClaw + Composio transforme votre assistant IA en véritable collaborateur commercial — emails, relances, agenda, reporting. Tout automatique.
+  </p>
+
+  <div class="hero-stats anim d3">
+    <div style="text-align:center;">
+      <div class="stat-val" data-target="6" data-suffix="">0</div>
+      <div class="stat-label">Modules actifs</div>
+    </div>
+    <div style="text-align:center;">
+      <div class="stat-val" data-target="24" data-suffix="h">0</div>
+      <div class="stat-label">Par jour</div>
+    </div>
+    <div style="text-align:center;">
+      <div class="stat-val" data-target="100" data-suffix="%">0</div>
+      <div class="stat-label">Automatisé</div>
+    </div>
+  </div>
+
+  <div class="hero-wa anim d4">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.820 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.800-.994-.643-.35-1.003.218-1.583.149-.155 2.732-2.504 2.782-2.717.006-.025.012-.12-.045-.17-.057-.05-.141-.033-.206-.019-.088.019-1.49.948-4.2 2.783-.398.273-.759.406-1.083.4-.357-.008-1.044-.202-1.555-.368-.626-.203-1.124-.31-1.080-.654.022-.178.253-.36.693-.547 2.713-1.18 4.522-1.96 5.426-2.340 2.584-1.075 3.121-1.262 3.471-1.268z"/></svg>
+    Piloté depuis Telegram · En temps réel
+  </div>
+</section>
+
+<!-- ══════ EMAILS ══════ -->
+<section id="emails">
+  <div class="glow-blue" style="top:50%;left:-300px;transform:translateY(-50%);"></div>
+
+  <div class="emails-left anim">
+    <div class="section-label">📧 Module 1 — Emails</div>
+    <h2 class="section-title">Boîte mail gérée<br/><em>automatiquement</em></h2>
+    <p style="color:var(--muted);font-size:14px;line-height:1.7;">
+      L'IA trie, priorise, répond et archive. Les urgences remontent sur Telegram instantanément.
+    </p>
+    <div class="feature-list">
+      <div class="feat-item"><span class="feat-check">✓</span> Tri et priorisation automatique</div>
+      <div class="feat-item"><span class="feat-check">✓</span> Réponses rédigées à votre place</div>
+      <div class="feat-item"><span class="feat-check">✓</span> Alertes urgences → Telegram</div>
+      <div class="feat-item"><span class="feat-check">✓</span> Archivage par client / projet</div>
+      <div class="feat-item"><span class="feat-check">✓</span> Relances prospects sans réponse</div>
+    </div>
+  </div>
+
+  <div class="emails-right">
+    <div class="email-card urgent anim d1">
+      <div class="email-avatar" style="background:rgba(248,113,113,0.15);color:var(--red);">MB</div>
+      <div class="email-body">
+        <div class="email-from">Marc Beaumont · Directeur Général</div>
+        <div class="email-subject">🔴 Appel d'offres — Réponse avant 17h</div>
+        <div class="email-preview">Suite à notre échange la semaine dernière...</div>
+        <div class="ai-badge">⚡ IA : Alerte envoyée sur Telegram · 09:14</div>
+      </div>
+      <div class="email-meta">
+        <span class="email-time">09:12</span>
+        <span class="email-tag tag-urgent">Urgent</span>
+      </div>
+    </div>
+
+    <div class="email-card relance anim d2">
+      <div class="email-avatar" style="background:rgba(251,146,60,0.15);color:var(--orange);">CA</div>
+      <div class="email-body">
+        <div class="email-from">Chloé Arnaud · Agence Créa+</div>
+        <div class="email-subject">Suite à notre proposition — Avez-vous eu le temps ?</div>
+        <div class="email-preview">Devis envoyé il y a 7 jours · aucune réponse</div>
+        <div class="ai-badge">✉️ IA : Relance J+7 envoyée automatiquement</div>
+      </div>
+      <div class="email-meta">
+        <span class="email-time">09:30</span>
+        <span class="email-tag tag-relance">Relance</span>
+      </div>
+    </div>
+
+    <div class="email-card done anim d3">
+      <div class="email-avatar" style="background:rgba(0,212,168,0.15);color:var(--green);">TL</div>
+      <div class="email-body">
+        <div class="email-from">Thomas Leroy · Cabinet ML</div>
+        <div class="email-subject">Confirmation RDV mardi 10h — Merci !</div>
+        <div class="email-preview">Parfait, j'ai bien reçu votre confirmation...</div>
+        <div class="ai-badge">📅 IA : RDV ajouté · CR template prêt</div>
+      </div>
+      <div class="email-meta">
+        <span class="email-time">10:05</span>
+        <span class="email-tag tag-done">Traité</span>
+      </div>
+    </div>
+
+    <div class="email-card normal anim d4">
+      <div class="email-avatar" style="background:rgba(79,142,247,0.15);color:var(--blue);">NP</div>
+      <div class="email-body">
+        <div class="email-from">Newsletter LinkedIn Ads · Rapport hebdo</div>
+        <div class="email-subject">3 nouvelles demandes entrantes cette semaine</div>
+        <div class="email-preview">3 nouvelles demandes depuis votre post LinkedIn...</div>
+        <div class="ai-badge">🗂️ IA : Archivé dans "Marketing" · Non urgent</div>
+      </div>
+      <div class="email-meta">
+        <span class="email-time">11:22</span>
+        <span class="email-tag tag-auto">Auto-classé</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ WHATSAPP ══════ -->
+<section id="telegram">
+  <div class="glow-green" style="bottom:-200px;right:-200px;"></div>
+
+  <div class="wa-phone anim">
+    <div class="wa-header">
+      <div class="wa-avatar-icon">🤖</div>
+      <div>
+        <div class="wa-name">Assistant IA</div>
+        <div class="wa-online">● En ligne</div>
+      </div>
+    </div>
+    <div class="wa-body" id="waBody">
+      <div class="wa-msg out">
+        Relance tous mes prospects sans réponse depuis 5 jours
+        <div class="wa-time-stamp">09:15 ✓</div>
+      </div>
+      <div class="wa-msg in">
+        ✅ <strong>3 prospects détectés :</strong><br/>
+        • Agence Dupont (J+6) → relancé ✓<br/>
+        • Cabinet Martin (J+5) → relancé ✓<br/>
+        • Studio Pixel (J+8) → relancé ✓
+        <div class="wa-time-stamp">09:15</div>
+      </div>
+      <div class="wa-msg out">
+        Qu'est-ce que j'ai de prévu aujourd'hui ?
+        <div class="wa-time-stamp">09:20 ✓</div>
+      </div>
+      <div class="wa-msg in">
+        📅 <strong>Agenda du jour :</strong><br/>
+        • 10h00 — Appel Thomas Leroy<br/>
+        • 14h30 — RDV Agence Nova<br/>
+        • 17h00 — Deadline Beaumont<br/>
+        <br/>💡 3 emails urgents en attente
+        <div class="wa-time-stamp">09:20</div>
+      </div>
+      <div class="wa-msg out">
+        Envoie le CR de ma réunion à Thomas
+        <div class="wa-time-stamp">11:45 ✓</div>
+      </div>
+      <div class="wa-msg in">
+        ✅ CR envoyé à thomas.leroy@cabinet-ml.fr<br/>
+        📎 Tâches créées :<br/>
+        • Envoyer devis sous 48h<br/>
+        • Rappel closing J+5
+        <div class="wa-time-stamp">11:45</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wa-right">
+    <div>
+      <div class="section-label">💬 Module 2 — Pilotage Telegram</div>
+      <h2 class="section-title">Tout se pilote<br/><em>depuis Telegram</em></h2>
+      <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:18px;">
+        Un simple message suffit. L'IA exécute, confirme, et vous tient informé en temps réel.
+      </p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div class="cmd-item">
+        <div class="cmd-icon">📊</div>
+        <div>
+          <div class="cmd-text">"Résumé de mon pipeline commercial"</div>
+          <div class="cmd-result">→ Rapport complet en 3 secondes</div>
+        </div>
+      </div>
+      <div class="cmd-item">
+        <div class="cmd-icon">✈️</div>
+        <div>
+          <div class="cmd-text">"Check-in pour mon vol de demain"</div>
+          <div class="cmd-result">→ Enregistrement + rappel trafic automatique</div>
+        </div>
+      </div>
+      <div class="cmd-item">
+        <div class="cmd-icon">📝</div>
+        <div>
+          <div class="cmd-text">"Génère le CR de ma réunion de 14h"</div>
+          <div class="cmd-result">→ CR rédigé + envoyé + tâches créées</div>
+        </div>
+      </div>
+      <div class="cmd-item">
+        <div class="cmd-icon">🔔</div>
+        <div>
+          <div class="cmd-text">"Alerte si un deal n'avance plus"</div>
+          <div class="cmd-result">→ Surveillance continue · notification auto</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ RELANCES ══════ -->
+<section id="relances">
+  <div class="glow-orange" style="top:-100px;right:-100px;"></div>
+
+  <div style="flex:0 0 340px;" class="anim">
+    <div class="section-label">🔄 Module 3 — Relances commerciales</div>
+    <h2 class="section-title">Pipeline de relances<br/><em>100% automatique</em></h2>
+    <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:24px;">
+      J+3 / J+7 / J+14 — Chaque message personnalisé selon le profil du prospect.
+    </p>
+
+    <div class="pipeline">
+      <div class="pipeline-stage">
+        <div class="stage-dot" style="background:rgba(79,142,247,0.15);border-color:var(--blue);color:var(--blue);">✉️</div>
+        <div class="stage-content">
+          <div class="stage-day" style="color:var(--blue);">J+0 — Envoi initial</div>
+          <div class="stage-action">Devis / Proposition envoyé</div>
+          <div class="stage-desc">Email personnalisé de présentation</div>
+          <div class="auto-tag">⚡ Déclencheur automatique</div>
+        </div>
+      </div>
+      <div class="pipeline-stage">
+        <div class="stage-dot" style="background:rgba(167,139,250,0.15);border-color:var(--purple);color:var(--purple);">📬</div>
+        <div class="stage-content">
+          <div class="stage-day" style="color:var(--purple);">J+3 — 1ère relance</div>
+          <div class="stage-action">"Avez-vous eu le temps de regarder ?"</div>
+          <div class="stage-desc">Ton léger, sans pression</div>
+          <div class="auto-tag">⚡ Auto si silence</div>
+        </div>
+      </div>
+      <div class="pipeline-stage">
+        <div class="stage-dot" style="background:rgba(251,146,60,0.15);border-color:var(--orange);color:var(--orange);">🔔</div>
+        <div class="stage-content">
+          <div class="stage-day" style="color:var(--orange);">J+7 — 2ème relance</div>
+          <div class="stage-action">"Souhaitez-vous qu'on en discute ?"</div>
+          <div class="stage-desc">Proposition d'un RDV de 20 min</div>
+          <div class="auto-tag">⚡ Auto si silence</div>
+        </div>
+      </div>
+      <div class="pipeline-stage">
+        <div class="stage-dot" style="background:rgba(248,113,113,0.15);border-color:var(--red);color:var(--red);">⚠️</div>
+        <div class="stage-content">
+          <div class="stage-day" style="color:var(--red);">J+14 — Alerte finale</div>
+          <div class="stage-action">Notification Telegram + dernière tentative</div>
+          <div class="stage-desc">Décision : fermer ou maintenir le deal</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="relances-right">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:4px;">
+      Pipeline actif — Aujourd'hui
+    </div>
+
+    <div class="prospect-card anim d1">
+      <div class="p-avatar" style="background:rgba(248,113,113,0.15);color:var(--red);">AD</div>
+      <div style="flex:1;">
+        <div class="p-name">Agence Dupont</div>
+        <div class="p-company">Marketing digital · Paris</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+        <span class="p-badge" style="background:rgba(248,113,113,0.15);color:var(--red);">J+8 · Sans réponse</span>
+        <span class="p-val">Devis : 4 200€</span>
+      </div>
+      <div class="p-btn">✓ Relancé</div>
+    </div>
+
+    <div class="prospect-card anim d2">
+      <div class="p-avatar" style="background:rgba(251,146,60,0.15);color:var(--orange);">CM</div>
+      <div style="flex:1;">
+        <div class="p-name">Cabinet Martin</div>
+        <div class="p-company">Communication B2B · Lyon</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+        <span class="p-badge" style="background:rgba(251,146,60,0.15);color:var(--orange);">J+5 · Sans réponse</span>
+        <span class="p-val">Devis : 2 800€</span>
+      </div>
+      <div class="p-btn">✓ Relancé</div>
+    </div>
+
+    <div class="prospect-card anim d3">
+      <div class="p-avatar" style="background:rgba(167,139,250,0.15);color:var(--purple);">SP</div>
+      <div style="flex:1;">
+        <div class="p-name">Studio Pixel</div>
+        <div class="p-company">Agence créa · Bordeaux</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+        <span class="p-badge" style="background:rgba(167,139,250,0.15);color:var(--purple);">J+3 · 1ère relance</span>
+        <span class="p-val">Devis : 3 500€</span>
+      </div>
+      <div class="p-btn">✓ Envoyé</div>
+    </div>
+
+    <div class="prospect-card anim d4">
+      <div class="p-avatar" style="background:rgba(0,212,168,0.15);color:var(--green);">NA</div>
+      <div style="flex:1;">
+        <div class="p-name">Agence Nova</div>
+        <div class="p-company">Social media · Nantes</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+        <span class="p-badge" style="background:rgba(0,212,168,0.15);color:var(--green);">RDV Confirmé ✓</span>
+        <span class="p-val">Devis : 5 100€</span>
+      </div>
+      <div class="p-btn" style="color:var(--blue);border-color:rgba(79,142,247,0.25);background:rgba(79,142,247,0.08);">📅 14h30</div>
+    </div>
+
+    <div style="padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:12px;color:var(--muted);">💰 Total pipeline actif</div>
+      <div style="font-size:22px;font-weight:800;color:var(--green);">15 600 €</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ REPORTING ══════ -->
+<section id="reporting">
+  <div class="glow-purple" style="top:-100px;left:-100px;"></div>
+
+  <div class="briefing-card anim">
+    <div class="briefing-header">
+      <div class="briefing-icon">☀️</div>
+      <div>
+        <div class="briefing-title">Briefing du matin</div>
+        <div class="briefing-date">Jeudi 10 juillet · 08:00</div>
+      </div>
+    </div>
+    <div class="b-sec-title">📅 Agenda</div>
+    <div class="b-row"><div class="b-dot" style="background:var(--blue);"></div><div class="b-text">10h — Appel Thomas Leroy</div><div class="b-val" style="color:var(--blue);">📞</div></div>
+    <div class="b-row"><div class="b-dot" style="background:var(--purple);"></div><div class="b-text">14h30 — RDV Agence Nova</div><div class="b-val" style="color:var(--purple);">🤝</div></div>
+    <div class="b-sec-title">🔄 Relances</div>
+    <div class="b-row"><div class="b-dot" style="background:var(--orange);"></div><div class="b-text">3 prospects à relancer</div><div class="b-val" style="color:var(--green);">Auto ✓</div></div>
+    <div class="b-sec-title">📊 KPIs</div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-val" style="color:var(--blue);">7</div><div class="kpi-label">Prospects actifs</div></div>
+      <div class="kpi-card"><div class="kpi-val" style="color:var(--green);">15k€</div><div class="kpi-label">Pipeline</div></div>
+      <div class="kpi-card"><div class="kpi-val" style="color:var(--purple);">3</div><div class="kpi-label">RDV ce mois</div></div>
+      <div class="kpi-card"><div class="kpi-val" style="color:var(--orange);">43%</div><div class="kpi-label">Taux réponse</div></div>
+    </div>
+  </div>
+
+  <div class="reporting-right">
+    <div>
+      <div class="section-label">📊 Module 4 — Reporting</div>
+      <h2 class="section-title">Pilotage<br/><em>en automatique</em></h2>
+      <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:16px;">
+        Briefing Telegram à 8h. Rapport hebdo le vendredi. Alertes si un deal ne bouge plus.
+      </p>
+    </div>
+    <div class="alert-card anim d1">
+      <div class="alert-icon">☀️</div>
+      <div>
+        <div class="alert-title">Briefing quotidien · 08:00</div>
+        <div class="alert-desc">Agenda, relances du jour, pipeline — envoyé sur Telegram chaque matin</div>
+        <div class="alert-footer">⚡ Actif · chaque jour ouvrable</div>
+      </div>
+    </div>
+    <div class="alert-card anim d2">
+      <div class="alert-icon">⚠️</div>
+      <div>
+        <div class="alert-title">Alerte deal bloqué</div>
+        <div class="alert-desc">Si un prospect stagne depuis 10 jours → notification immédiate sur Telegram</div>
+        <div class="alert-footer">⚡ Surveillance continue 24h/24</div>
+      </div>
+    </div>
+    <div class="alert-card anim d3">
+      <div class="alert-icon">📈</div>
+      <div>
+        <div class="alert-title">Rapport hebdomadaire · Vendredi 18h</div>
+        <div class="alert-desc">Deals, relances, emails traités, KPIs — résumé complet automatique</div>
+        <div class="alert-footer">⚡ Actif · chaque vendredi</div>
+      </div>
+    </div>
+    <div class="alert-card anim d4">
+      <div class="alert-icon">🎯</div>
+      <div>
+        <div class="alert-title">Mise à jour CRM automatique</div>
+        <div class="alert-desc">Chaque interaction → Pipedrive / HubSpot mis à jour + tâche de suivi créée</div>
+        <div class="alert-footer">⚡ Intégration directe</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ CTA ══════ -->
+<section id="cta">
+  <div class="glow-blue" style="top:-100px;right:-100px;"></div>
+  <div class="glow-green" style="bottom:-100px;left:-100px;"></div>
+
+  <div class="badge anim">🎯 Livraison 15 jours · Garantie 30 jours</div>
+
+  <h2 class="cta-title anim d1">
+    Votre assistant IA<br/>
+    <span>opérationnel dès lundi</span>
+  </h2>
+
+  <p class="anim d2" style="color:var(--muted);font-size:16px;max-width:480px;text-align:center;line-height:1.7;">
+    Configuration clé en main. Aucune compétence technique. Contrôle total depuis Telegram.
+  </p>
+
+  <div class="cta-boxes anim d3">
+    <div class="cta-box">
+      <div class="cta-box-icon">📧</div>
+      <div class="cta-box-title">Emails</div>
+      <div class="cta-box-desc">Tri, réponses, relances — 100% automatique</div>
+    </div>
+    <div class="cta-box">
+      <div class="cta-box-icon">🔄</div>
+      <div class="cta-box-title">Relances</div>
+      <div class="cta-box-desc">J+3, J+7, J+14 personnalisées</div>
+    </div>
+    <div class="cta-box">
+      <div class="cta-box-icon">📅</div>
+      <div class="cta-box-title">Agenda</div>
+      <div class="cta-box-desc">RDV, rappels, CR — sans intervention</div>
+    </div>
+    <div class="cta-box">
+      <div class="cta-box-icon">📊</div>
+      <div class="cta-box-title">Reporting</div>
+      <div class="cta-box-desc">Briefing quotidien · alertes · hebdo</div>
+    </div>
+  </div>
+
+  <div class="anim d4" style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+    <a class="cta-btn" href="#" target="_blank" rel="noopener noreferrer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      Demander mon assistant
+    </a>
+    <div style="font-size:12px;color:var(--muted);">Setup 15 jours · Satisfait ou remboursé 30 jours</div>
+  </div>
+</section>
+
+<script>
+  // Nav dots
+  const dots = document.querySelectorAll('.nav-dot');
+  const sections = document.querySelectorAll('section');
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const i = [...sections].indexOf(e.target);
+        dots.forEach((d, j) => d.classList.toggle('active', i === j));
+      }
+    });
+  }, { threshold: 0.5 });
+
+  sections.forEach(s => io.observe(s));
+  dots.forEach((d, i) => d.addEventListener('click', () => sections[i].scrollIntoView({ behavior: 'smooth' })));
+
+  // Keyboard nav
+  document.addEventListener('keydown', e => {
+    const active = [...dots].findIndex(d => d.classList.contains('active'));
+    if (e.key === 'ArrowDown' && active < sections.length - 1) sections[active + 1].scrollIntoView({ behavior: 'smooth' });
+    if (e.key === 'ArrowUp' && active > 0) sections[active - 1].scrollIntoView({ behavior: 'smooth' });
+  });
+
+  // Counter animation
+  const counters = document.querySelectorAll('[data-target]');
+  const cio = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const el = e.target;
+      const target = +el.dataset.target;
+      const suffix = el.dataset.suffix || '';
+      let cur = 0;
+      const step = target / 45;
+      const t = setInterval(() => {
+        cur = Math.min(cur + step, target);
+        el.textContent = Math.floor(cur) + suffix;
+        if (cur >= target) clearInterval(t);
+      }, 28);
+      cio.unobserve(el);
+    });
+  }, { threshold: 0.5 });
+  counters.forEach(c => cio.observe(c));
+
+  // Telegram live chat animation
+  const waBody = document.getElementById('waBody');
+  const msgs = [
+    { type: 'out', text: 'Rapport hebdo prêt ?' },
+    { type: 'in', text: '📈 <strong>Semaine 28 :</strong><br/>• 12 emails traités<br/>• 5 relances envoyées<br/>• 2 RDV obtenus<br/>• Pipeline : +15 600€ 🟢' },
+    { type: 'out', text: 'Rappelle-moi de préparer le devis Nova' },
+    { type: 'in', text: '⏰ Rappel créé : demain à 9h<br/>📋 Template devis Nova disponible' },
+  ];
+  let idx = 0;
+  const addMsg = () => {
+    const m = msgs[idx % msgs.length];
+    const div = Object.assign(document.createElement('div'), { className: `wa-msg ${m.type}`, innerHTML: m.innerHTML || m.text + `<div class="wa-time-stamp">${new Date().toLocaleTimeString('fr',{hour:'2-digit',minute:'2-digit'})}${m.type==='out'?' ✓':''}</div>` });
+    div.style.cssText = 'opacity:0;transform:translateY(8px);transition:all 0.4s ease;';
+    waBody.appendChild(div);
+    waBody.scrollTop = waBody.scrollHeight;
+    requestAnimationFrame(() => setTimeout(() => { div.style.opacity='1'; div.style.transform='translateY(0)'; }, 30));
+    idx++;
+    // trim old messages
+    while (waBody.children.length > 8) waBody.removeChild(waBody.firstChild);
+  };
+  setInterval(addMsg, 5000);
+</script>
+</body>
+</html>
